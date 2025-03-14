@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:reeder_demo1/view/login_view.dart';
+// ignore: depend_on_referenced_packages
+import 'package:shared_preferences/shared_preferences.dart';
 
+// ignore: camel_case_types
 class Main_View extends StatelessWidget {
-  const Main_View({super.key});
+  final String name;
+  final String email;
+
+  const Main_View({super.key, required this.name, required this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -11,9 +17,9 @@ class Main_View extends StatelessWidget {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("#İSİM"),
-            SizedBox(width: 8), // Add some spacing between the texts
-            Text("#SOYİSİM"),
+            Text(name), // Kullanıcının adını göster
+            SizedBox(width: 8),
+            Text(email), // Kullanıcının e-posta adresini göster
           ],
         ),
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
@@ -22,62 +28,34 @@ class Main_View extends StatelessWidget {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(30.0),
-          child: Container(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [_build(context), _build1(context)],
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Hoşgeldiniz, $name", // Kullanıcının adını göster
+                style: TextStyle(
+                  fontSize: 30,
+                  color: const Color.fromARGB(255, 0, 0, 0),
+                ),
+              ),
+              SizedBox(height: 100),
+              ElevatedButton(
+                onPressed: () {
+                  SharedPreferences.getInstance().then((prefs) {
+                    prefs.setBool('isLoggedIn', false); // Oturumu kapat
+                    Navigator.pushReplacement(
+                      // ignore: use_build_context_synchronously
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginView()),
+                    ); // LoginView'e yönlendir
+                  });
+                },
+                child: Text("Çıkış Yap", style: TextStyle(fontSize: 20)),
+              ),
+            ],
           ),
         ),
       ),
     );
-  }
-
-  Widget _build(BuildContext context) {
-    return Container(
-      height: 500,
-      width: double.infinity,
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Hoşgeldiniz",
-            style: TextStyle(
-              fontSize: 30,
-              color: const Color.fromARGB(255, 0, 0, 0),
-            ),
-          ),
-          Row(
-            children: [
-              Text("#İsim", style: TextStyle(fontSize: 20)),
-              Text("#Soyisim", style: TextStyle(fontSize: 20)),
-            ],
-          ),
-          SizedBox(height: 3),
-          Text("#E-Posta", style: TextStyle(fontSize: 20)),
-          SizedBox(height: 200),
-          Center(
-            child: SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => LoginView()),
-                  );
-                },
-                child: Text("Çıkış Yap", style: TextStyle(fontSize: 20)),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _build1(BuildContext context) {
-    return Container(height: 100, width: double.infinity, color: Colors.blue);
   }
 }

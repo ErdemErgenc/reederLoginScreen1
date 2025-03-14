@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+// ignore: depend_on_referenced_packages
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterView extends StatelessWidget {
-  const RegisterView({super.key});
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController passwordConfirmController =
+      TextEditingController();
+
+  RegisterView({super.key});
 
   @override
-    Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Kayıt Olma Sayfası"),
-      ),
+      appBar: AppBar(title: Text("Kayıt Olma Sayfası")),
       backgroundColor: Color(0xFFF4F4F4),
       body: Padding(
         padding: const EdgeInsets.all(30.0),
@@ -33,9 +39,8 @@ class RegisterView extends StatelessWidget {
     );
   }
 
-  @override
   Widget _logo(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 150,
 
@@ -53,7 +58,7 @@ class RegisterView extends StatelessWidget {
   }
 
   Widget _kayitOL(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 90,
 
@@ -81,7 +86,7 @@ class RegisterView extends StatelessWidget {
   }
 
   Widget _isim(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 120,
 
@@ -97,6 +102,7 @@ class RegisterView extends StatelessWidget {
           ),
           SizedBox(height: 5),
           TextField(
+            controller: nameController,
             decoration: InputDecoration(
               fillColor: Colors.white,
               filled: true,
@@ -116,7 +122,7 @@ class RegisterView extends StatelessWidget {
   }
 
   Widget _eposta(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 120,
 
@@ -132,6 +138,7 @@ class RegisterView extends StatelessWidget {
           ),
           SizedBox(height: 5),
           TextField(
+            controller: emailController,
             decoration: InputDecoration(
               fillColor: Colors.white,
               filled: true,
@@ -151,7 +158,7 @@ class RegisterView extends StatelessWidget {
   }
 
   Widget _sifre(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 130,
 
@@ -167,6 +174,7 @@ class RegisterView extends StatelessWidget {
           ),
           SizedBox(height: 5),
           TextField(
+            controller: passwordController,
             decoration: InputDecoration(
               fillColor: Colors.white,
               filled: true,
@@ -186,8 +194,7 @@ class RegisterView extends StatelessWidget {
   }
 
   Widget _sifretekrar(BuildContext context) {
-    return Container(
-      
+    return SizedBox(
       width: double.infinity,
       height: 120,
 
@@ -203,6 +210,7 @@ class RegisterView extends StatelessWidget {
           ),
           SizedBox(height: 5),
           TextField(
+            controller: passwordConfirmController,
             decoration: InputDecoration(
               fillColor: Colors.white,
               filled: true,
@@ -224,20 +232,44 @@ class RegisterView extends StatelessWidget {
   Widget _kayitolbuton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 40),
-      child: Container(
+      child: SizedBox(
         width: 400,
         height: 50,
         child: ElevatedButton(
-          onPressed: () {},
-          child: Text(
-            "Kayıt ol",
-            style: GoogleFonts.poppins(fontSize: 20, color: Colors.white),
-          ),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
+          ),
+          onPressed: () async {
+            if (passwordController.text == passwordConfirmController.text) {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.setString('name', nameController.text);
+              prefs.setString('email', emailController.text);
+              prefs.setString('password', passwordController.text);
+
+              // ignore: use_build_context_synchronously
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Kayıt başarılı"),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              // ignore: use_build_context_synchronously
+              Navigator.pop(context);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Şifreler uyuşmuyor"),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          },
+          child: Text(
+            "Kayıt ol",
+            style: GoogleFonts.poppins(fontSize: 20, color: Colors.white),
           ),
         ),
       ),

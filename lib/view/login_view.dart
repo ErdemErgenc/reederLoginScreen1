@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:reeder_demo1/view/register.dart';
 import 'package:reeder_demo1/view/main_view.dart';
-import 'package:reeder_demo1/widget/custom_text_field_.dart'; // Ensure this import is correct and the MainView class is defined in this file
+// ignore: depend_on_referenced_packages
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginView extends StatelessWidget {
-  const LoginView({super.key});
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  LoginView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +23,17 @@ class LoginView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _logo(context),
+
                 _welcome(context),
+                SizedBox(height: 40),
                 _inputMail(context),
+                SizedBox(height: 30),
                 _inputPassword(context),
+                SizedBox(height: 20),
                 _button(context),
+                SizedBox(height: 20),
                 _divider(context),
+                SizedBox(height: 20),
                 _register(context),
               ],
             ),
@@ -35,64 +45,66 @@ class LoginView extends StatelessWidget {
 
   //LOGO ALANI
   Widget _logo(BuildContext context) {
-    return Container(
+    return Column(
+      children: [
+        Image.network(
+          "https://reeder.com.tr/media/logo/websites/3/reeder-logo.png",
+          width: 200,
+          height: 300,
+          fit: BoxFit.contain,
+        ),
+      ],
+    );
+  }
+
+  //HOŞGELDİNİZ ALANI
+  Widget _welcome(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.network(
-            "https://reeder.com.tr/media/logo/websites/3/reeder-logo.png",
-            width: 200,
-            height: 300,
-            fit: BoxFit.contain,
+          Text(
+            'Hoşgeldiniz',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Giriş yapmak için lütfen bilgilerinizi giriniz.',
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ],
       ),
     );
   }
 
-  //HOŞGELDİNİZ ALANI
-  Widget _welcome(BuildContext context) {
-    return Container(
-      width: double.infinity,
-
-      child: Container(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Hoşgeldiniz',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(height: 3),
-            Text(
-              'Giriş yapmak için lütfen bilgilerinizi giriniz.',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
+  Widget _inputMail(BuildContext context) {
+    return TextField(
+      controller: emailController, // E-posta controller'ı
+      decoration: InputDecoration(
+        hintText: "E-posta adresinizi giriniz",
+        labelText: "E-posta",
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
 
-  //KULLANICI GİRİŞ ALANI
-  Widget _inputMail(BuildContext context) {
-    return CustomTextField(
-      hintText: "E-posta adresinizi giriniz",
-      title: "E-posta",
-    );
-  }
-
-  //KULLANICI GİRİŞ ALANI
   Widget _inputPassword(BuildContext context) {
-    return CustomTextField(
-      hintText: "Şifrenizi giriniz",
-      title: "Şifre",
-      borderRadius: BorderRadius.all(Radius.circular(50)),
+    return TextField(
+      controller: passwordController, // Şifre controller'ı
+      obscureText: true, // Şifreyi gizler
+      decoration: InputDecoration(
+        hintText: "Şifrenizi giriniz",
+        labelText: "Şifre",
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 
@@ -100,23 +112,60 @@ class LoginView extends StatelessWidget {
   Widget _button(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 40),
-      child: Container(
+      child: SizedBox(
         width: 200,
         height: 50,
         child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Main_View()),
-            );
+          onPressed: () async {
+            String email = emailController.text;
+            String password = passwordController.text;
+
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            String? emailPref = prefs.getString('email');
+            String? passwordPref = prefs.getString('password');
+
+            if (email == emailPref && password == passwordPref) {
+              await prefs.setBool('isLoggedIn', true);
+
+              Navigator.push(
+                // ignore: use_build_context_synchronously
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => Main_View(
+                        name: prefs.getString('name') ?? "",
+                        email: prefs.getString('email') ?? "",
+                      ),
+                ),
+              );
+            } else {
+              showDialog(
+                // ignore: use_build_context_synchronously
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text("Hata"),
+                    content: Text("E-posta veya şifre hatalı."),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text("Kapat"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
           },
-          child: Text("OTURUM AÇ"),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
           ),
+          child: Text("OTURUM AÇ"),
         ),
       ),
     );
@@ -158,7 +207,7 @@ class LoginView extends StatelessWidget {
 
   //KAYIT OL TEXT BUTONU ALANI
   Widget _register(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: MediaQuery.of(context).size.width,
       height: 100,
       child: Column(
@@ -171,8 +220,8 @@ class LoginView extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => RegisterView()),
               );
             },
-            child: Text("Kayıt Ol"),
             style: TextButton.styleFrom(foregroundColor: Colors.green),
+            child: Text("Kayıt Ol"),
           ),
         ],
       ),
